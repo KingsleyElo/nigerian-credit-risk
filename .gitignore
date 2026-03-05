@@ -1,0 +1,13 @@
+# Large raw data only
+data/raw/loan.csv
+
+# Python
+__pycache__/
+.venv/
+
+# IDE
+.vscode/settings.json
+
+# OS
+.DS_Store
+Thumbs.db
