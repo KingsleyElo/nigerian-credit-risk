@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS loan_features;
 CREATE TABLE loan_features AS
 SELECT 
     -- CORE TABLE (all original columns)
