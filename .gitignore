@@ -1,9 +1,18 @@
 # Large raw data only
 data/raw/loan.csv
+.env
 
 # Python
 __pycache__/
 .venv/
+*.pyc
+*.pyo
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Pipenv
+Pipfile.lock
 
 # IDE
 .vscode/settings.json

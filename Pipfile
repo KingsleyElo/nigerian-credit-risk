@@ -12,6 +12,7 @@ xgboost = "*"
 psycopg2-binary = "*"
 pandas = "*"
 sqlalchemy = "*"
+python-dotenv = "*"
 
 [dev-packages]
 ipykernel = "*"
