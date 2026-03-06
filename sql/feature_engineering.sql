@@ -1,3 +1,12 @@
+-- ============================================================
+-- Feature Engineering: Nigerian Digital Lending Credit Risk
+-- Source table: lending_cleaned
+-- Output table: loan_features
+-- Features: Affordability(5 features), Utilization(1), Delinquency(5 features), 
+--           Inquiry(3 features), Credit Maturity(3 features), Income(2 features), 
+--           Revolving Health(3 features)
+-- ============================================================
+
 DROP TABLE IF EXISTS loan_features;
 CREATE TABLE loan_features AS
 SELECT 
@@ -31,14 +40,15 @@ SELECT
     
     -- INQUIRY BEHAVIOR (3 features)
     CASE WHEN l.inq_last_6mths >= 3 THEN 1 ELSE 0 END AS high_inquiry_flag,
+    -- NULL means no recent inquiry, treated as 0 (not flagged)
     CASE WHEN l.mths_since_recent_inq <= 3 THEN 1 ELSE 0 END AS recent_inquiry_flag,
     l.inq_last_6mths / NULLIF(l.credit_age_years, 0) AS inquiry_rate,
     
     -- CREDIT MATURITY & BREADTH (3 features)
     CASE
-        WHEN l.credit_age_years < 5 THEN 'Thin'
-        WHEN l.credit_age_years BETWEEN 5 AND 10 THEN 'Moderate'
-        ELSE 'Established'
+        WHEN l.credit_age_years < 20 THEN 'Developing'
+        WHEN l.credit_age_years BETWEEN 20 AND 30 THEN 'Established'
+        ELSE 'Seasoned'
     END AS credit_age_bucket,
     l.total_acc / NULLIF(l.credit_age_years, 0) AS credit_breadth,
     CASE WHEN l.total_acc < 5 AND l.credit_age_years < 3 THEN 1 ELSE 0 END AS thin_file_flag,
@@ -47,7 +57,8 @@ SELECT
     CASE
         WHEN l.annual_inc >= 100000 AND l.verification_status = 'Verified' THEN 'Formal_High'
         WHEN l.annual_inc >= 40000 AND l.verification_status = 'Verified' THEN 'Formal_Mid'
-        WHEN l.verification_status != 'Verified' THEN 'Informal'
+        WHEN l.verification_status = 'Source Verified' THEN 'Formal_Low'
+        WHEN l.verification_status = 'Not Verified' THEN 'Informal'
         ELSE 'Formal_Low'
     END AS income_segment,
     CASE WHEN l.verification_status = 'Verified' THEN 1 ELSE 0 END AS income_verified_flag,
@@ -58,3 +69,7 @@ SELECT
     l.percent_bc_gt_75 / 100.0 AS pct_maxed_cards
 
 FROM lending_cleaned l;
+
+-- Drop leakage-risk columns
+ALTER TABLE loan_features DROP COLUMN grade;
+ALTER TABLE loan_features DROP COLUMN sub_grade;
