@@ -1,206 +1,152 @@
-
 # Nigerian Digital Lending — Credit Risk Modeling
 
-## Project Overview
-
-This project simulates a **Nigerian digital lending platform** building a **machine learning credit risk model** to predict borrower default.
-
-Digital lenders must decide **within seconds** whether a borrower should receive a loan. Poor decisions increase **non-performing loans (NPLs)** and threaten the sustainability of lending businesses.
-
-The goal of this project is to build a **probability of default (PD) model** that can help lenders:
-
-* Assess borrower creditworthiness
-* Predict likelihood of loan default
-* Support **risk-based pricing**
-* Reduce **loan losses**
-* Automate lending decisions
-
-Although the dataset originates from **Lending Club (U.S.)**, the project is structured to simulate the **decision pipeline used by Nigerian fintech lenders**.
+> End-to-end ML pipeline predicting loan default probability,
+> simulating the credit risk infrastructure of Nigerian fintech lenders.
 
 ---
 
-# Business Problem
+## Overview
 
-A digital lending company must answer a key question:
+Digital lenders must decide **within seconds** whether to approve a loan.
+Poor decisions increase **non-performing loans (NPLs)** and threaten
+business sustainability.
 
-**"Will this borrower repay the loan?"**
+This project builds a **Probability of Default (PD) model** that helps lenders:
+- Assess borrower creditworthiness
+- Predict likelihood of loan default
+- Support risk-based pricing
+- Automate lending decisions
 
-This project frames the problem as a **binary classification task**:
-
-| Target | Meaning           |
-| ------ | ----------------- |
-| **0**  | Loan fully repaid |
-| **1**  | Loan defaulted    |
-
-The model outputs a **probability of default (PD)** that can be integrated into a lending system to guide loan approvals.
-
----
-
-# Dataset
-
-The dataset comes from **Lending Club historical loan data**.
-
-Original dataset:
-
-* ~890,000 loans
-* 145 variables
-* Multiple borrower and credit features
-
-For this project:
-
-* A **100,000 observation random sample** was created
-* Only **finalized loans** were used for modeling
-* Target variable engineered as **default_flag**
+Although the dataset originates from **Lending Club (U.S.)**, the pipeline
+is structured to simulate the **feature engineering and modeling workflow
+used by Nigerian fintech lenders** — with features mapped to local data
+sources (Mono, Okra, CRC bureau) and CBN regulatory thresholds applied.
 
 ---
 
-# Key Feature Categories
+## Results
 
-### Loan Characteristics
+| Model | Baseline AUC | Tuned AUC |
+|---|---|---|
+| Logistic Regression | 0.7166 | 0.7171 |
+| Random Forest | 0.7052 | 0.7142 |
+| XGBoost v1 | 0.6949 | 0.7005 |
+| **XGBoost v2** | — | **0.7223** |
 
-* `loan_amnt`
-* `term`
-* `int_rate`
-* `installment`
-* `purpose`
-* `grade`
-* `sub_grade`
-
-These describe **loan structure and pricing**.
-
----
-
-### Borrower Demographics
-
-* `emp_length`
-* `home_ownership`
-* `annual_inc`
-* `verification_status`
-* `addr_state`
-
-These capture **borrower financial stability**.
+**Champion model: XGBoost**
+Best parameters: `learning_rate=0.05`, `max_depth=3`,
+`min_child_weight=10`, `n_estimators=500`, `subsample=0.8`
 
 ---
 
-### Credit Behavior Metrics
-
-* `dti`
-* `revol_bal`
-* `revol_util`
-* `delinq_2yrs`
-* `inq_last_6mths`
-* `total_acc`
-* `pub_rec_bankruptcies`
-
-These represent **borrower credit history and repayment behavior**.
-
----
-
-# Project Workflow
-
-The project follows a **real-world credit risk modeling pipeline**.
-
-### 1 Data Cleaning (Python)
-
-* Load raw Lending Club data
-* Select relevant features
-* Remove leakage variables
-* Engineer binary target variable
-
-Notebook:
-`notebooks/01_data_cleaning.ipynb`
+## Project Structure
+```
+nigerian-credit-risk/
+├── data/
+│   ├── raw/                        # Original loan sample
+│   ├── processed/                  # Cleaned dataset
+│   └── features/                   # SQL-engineered feature set
+├── notebooks/                      # End-to-end pipeline notebooks
+├── sql/                            # PostgreSQL feature engineering
+├── models/                         # Saved champion model
+└── app/                            # Flask API (coming soon)
+```
 
 ---
 
-### 2 Exploratory Data Analysis (Python)
+## Pipeline
 
-Focused EDA to understand:
+### 1. Data Cleaning
+- Loaded raw Lending Club data (100,000 loan sample)
+- Removed leakage variables including `grade` and `sub_grade`
+- Engineered binary `default_flag` target variable
 
-* default patterns
-* feature distributions
-* predictive variables
+### 2. Exploratory Data Analysis
+- Analyzed default patterns across borrower segments
+- Examined feature distributions and correlations
+- Identified key predictive variables
 
-Notebook:
+### 3. Feature Engineering (PostgreSQL)
+Features engineered in SQL to simulate a **Nigerian fintech feature store**:
 
-`notebooks/02_eda.ipynb`
+| Category | Features |
+|---|---|
+| Affordability | `income_to_loan_ratio`, `payment_coverage_ratio`, `overall_leverage_ratio`, `cbn_dti_compliant`, `high_dti_flag` |
+| Credit Utilization | `revol_util_bucket` |
+| Delinquency & Risk | `has_delinquency_2yrs`, `has_pub_rec`, `has_bankruptcy`, `has_current_delinq`, `risk_flag_count` |
+| Inquiry Behavior | `high_inquiry_flag`, `recent_inquiry_flag`, `inquiry_rate` |
+| Credit Maturity | `credit_age_bucket`, `credit_breadth`, `thin_file_flag` |
+| Income Segmentation | `income_segment`, `income_verified_flag` |
+| Revolving Health | `revol_utilization_ratio`, `avg_credit_limit_per_account`, `pct_maxed_cards` |
 
----
+**Nigerian context mapping:**
 
-### 3 Feature Engineering (SQL)
+| Feature | Nigerian Equivalent |
+|---|---|
+| `annual_inc` | Payroll APIs (Mono, Okra) |
+| `revol_util` | CRC / FirstCentral bureau |
+| `dti` | Bank statement analysis |
+| `verification_status` | IPPIS / payroll verification |
+| `inq_last_6mths` | Bureau inquiry count |
+| `cbn_dti_compliant` | CBN 33% debt service threshold |
 
-SQL is used to create **credit risk features similar to those used by fintech lenders**, such as:
+### 4. Modelling
+- scikit-learn pipelines with median imputation, standard scaling, one-hot encoding
+- Class imbalance handled via `class_weight='balanced'` and `scale_pos_weight`
+- Hyperparameter tuning via `GridSearchCV` with 5-fold cross validation
+- XGBoost required deeper tuning (learning_rate, min_child_weight, subsample)
+  to reach performance ceiling
 
-* credit utilization buckets
-* income-to-loan ratio
-* high debt-to-income flags
-* delinquency indicators
-
-This step simulates **data warehouse feature engineering used in production systems**.
-
----
-
-### 4 Machine Learning Pipeline (Python)
-
-Using **scikit-learn pipelines** to ensure proper modeling workflow:
-
-* train/test split
-* missing value imputation
-* categorical encoding
-* model training
-
-Algorithms tested:
-
-* Logistic Regression
-* Random Forest
-* Gradient Boosting
-
----
-
-### 5 Model Evaluation
-
-Models evaluated using credit risk metrics:
-
-* ROC-AUC
-* Precision
-* Recall
-* Confusion Matrix
-
-Focus is placed on **detecting high-risk borrowers**.
+### 5. Model Evaluation
+- ROC-AUC, KS Statistic, Confusion Matrix at multiple thresholds
+- Feature importance analysis
+- Business impact framing for fintech risk teams
 
 ---
 
-# Technologies Used
+## Technologies
 
-* **Python**
-* **Pandas**
-* **NumPy**
-* **Scikit-learn**
-* **SQL (PostgreSQL)**
-* **Jupyter Notebook**
-
----
-
-# Key Skills Demonstrated
-
-This project demonstrates:
-
-* Credit risk modeling
-* Data cleaning and preprocessing
-* Feature engineering
-* Machine learning pipelines
-* Handling imbalanced datasets
-* Financial risk analytics
+| Layer | Tools |
+|---|---|
+| Language | Python 3.14.0 |
+| Data Engineering | PostgreSQL, SQLAlchemy, Pandas |
+| Machine Learning | scikit-learn, XGBoost |
+| Environment | Pipenv, python-dotenv |
+| Version Control | Git, GitHub |
 
 ---
 
-# Author
+## Setup
+```bash
+# Clone the repo
+git clone https://github.com/KingsleyElo/nigerian-credit-risk.git
+cd nigerian-credit-risk
 
-**Kingsley Eloebhose**
+# Install dependencies
+pipenv install
 
-This project is part of my journey toward building **production-ready machine learning systems for fintech and financial risk modeling**.
+# Configure environment
+cp .env.example .env
+# Edit .env with your PostgreSQL credentials
+
+# Run notebooks in order
+# 01 → 02 → 03 → 04 → 05
+```
 
 ---
 
-# License
+## Author
 
-This project is for **educational and portfolio purposes only**.
+**Kingsley Eloebhose** — Lagos, Nigeria
+
+Building production-ready ML systems for Nigerian fintech and financial
+risk modeling.
+
+- LinkedIn: [kingsley-eloebhose](https://www.linkedin.com/in/kingsley-eloebhose-77ab41379)
+- GitHub: [@KingsleyElo](https://github.com/KingsleyElo)
+
+---
+
+## License
+
+For educational and portfolio purposes only.
