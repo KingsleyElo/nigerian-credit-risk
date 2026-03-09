@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nigerian Credit Risk — Loan Default Predictor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f0f1a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: #00e5ff;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #888;
+            font-size: 14px;
+        }
+
+        .card {
+            background: #1a1a2e;
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 24px;
+            border: 1px solid #2a2a4a;
+        }
+
+        .card h2 {
+            font-size: 16px;
+            color: #00e5ff;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input,
+        .form-group select {
+            background: #0f0f1a;
+            border: 1px solid #2a2a4a;
+            border-radius: 6px;
+            padding: 10px 12px;
+            color: #e0e0e0;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #00e5ff;
+        }
+
+        .form-group select option {
+            background: #1a1a2e;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: #00e5ff;
+            color: #0f0f1a;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: background 0.2s;
+        }
+
+        .submit-btn:hover {
+            background: #00b8cc;
+        }
+
+        .result-card {
+            display: none;
+            background: #1a1a2e;
+            border-radius: 12px;
+            padding: 32px;
+            border: 1px solid #2a2a4a;
+            text-align: center;
+        }
+
+        .result-decision {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .result-decision.approve {
+            color: #00e676;
+        }
+
+        .result-decision.reject {
+            color: #ff5252;
+        }
+
+        .result-probability {
+            font-size: 16px;
+            color: #888;
+            margin-bottom: 16px;
+        }
+
+        .result-risk {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .risk-low { background: #00e67622; color: #00e676; }
+        .risk-medium { background: #ffab0022; color: #ffab00; }
+        .risk-high { background: #ff525222; color: #ff5252; }
+
+        .disclaimer {
+            text-align: center;
+            font-size: 12px;
+            color: #555;
+            margin-top: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <div class="header">
+            <h1>🏦 Nigerian Credit Risk Predictor</h1>
+            <p>XGBoost model — Probability of Default scoring pipeline</p>
+        </div>
+
+        <form id="loanForm">
+
+            <div class="card">
+                <h2>Loan Details</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Loan Amount (₦)</label>
+                        <input type="number" name="loan_amnt" value="12000" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Interest Rate (%)</label>
+                        <input type="number" step="0.01" name="int_rate" value="12.74" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Installment (Monthly)</label>
+                        <input type="number" step="0.01" name="installment" value="374.33" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Term (Months)</label>
+                        <select name="term">
+                            <option value="36">36 Months</option>
+                            <option value="60">60 Months</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Purpose</label>
+                        <select name="purpose">
+                            <option value="debt_consolidation">Debt Consolidation</option>
+                            <option value="credit_card">Credit Card</option>
+                            <option value="home_improvement">Home Improvement</option>
+                            <option value="other">Other</option>
+                            <option value="major_purchase">Major Purchase</option>
+                            <option value="small_business">Small Business</option>
+                            <option value="car">Car</option>
+                            <option value="medical">Medical</option>
+                            <option value="moving">Moving</option>
+                            <option value="vacation">Vacation</option>
+                            <option value="house">House</option>
+                            <option value="wedding">Wedding</option>
+                            <option value="educational">Educational</option>
+                            <option value="renewable_energy">Renewable Energy</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Borrower Profile</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Annual Income (₦)</label>
+                        <input type="number" name="annual_inc" value="65000" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Employment Length (Years)</label>
+                        <input type="number" name="emp_length" value="6" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Home Ownership</label>
+                        <select name="home_ownership">
+                            <option value="MORTGAGE">Mortgage</option>
+                            <option value="RENT">Rent</option>
+                            <option value="OWN">Own</option>
+                            <option value="OTHER">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Income Verification</label>
+                        <select name="verification_status">
+                            <option value="Source Verified">Source Verified</option>
+                            <option value="Verified">Verified</option>
+                            <option value="Not Verified">Not Verified</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Debt-to-Income Ratio (%)</label>
+                        <input type="number" step="0.01" name="dti" value="17.56" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Revolving Utilization (%)</label>
+                        <input type="number" step="0.01" name="revol_util" value="52.1" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Credit History</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Delinquencies (Last 2 Years)</label>
+                        <input type="number" name="delinq_2yrs" value="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Inquiries (Last 6 Months)</label>
+                        <input type="number" name="inq_last_6mths" value="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Public Records</label>
+                        <input type="number" name="pub_rec" value="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Bankruptcies</label>
+                        <input type="number" name="pub_rec_bankruptcies" value="0" required>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn">
+                Assess Default Risk
+            </button>
+
+        </form>
+
+        <div class="result-card" id="resultCard">
+            <div class="result-decision" id="resultDecision"></div>
+            <div class="result-probability" id="resultProbability"></div>
+            <div class="result-risk" id="resultRisk"></div>
+        </div>
+
+        <p class="disclaimer">
+            For portfolio demonstration purposes only. 
+            Built by Kingsley Eloebhose — Nigerian Credit Risk Pipeline.
+        </p>
+
+    </div>
+
+    <script>
+        document.getElementById('loanForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const submitBtn = document.querySelector('.submit-btn');
+            submitBtn.textContent = 'Assessing...';
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                const resultCard = document.getElementById('resultCard');
+                const resultDecision = document.getElementById('resultDecision');
+                const resultProbability = document.getElementById('resultProbability');
+                const resultRisk = document.getElementById('resultRisk');
+
+                resultDecision.textContent = result.decision;
+                resultDecision.className = 'result-decision ' + 
+                    (result.decision === 'APPROVE' ? 'approve' : 'reject');
+
+                resultProbability.textContent = 
+                    `Default Probability: ${(result.probability * 100).toFixed(2)}%`;
+
+                resultRisk.textContent = `Risk Level: ${result.risk_level}`;
+                resultRisk.className = 'result-risk risk-' + 
+                    result.risk_level.toLowerCase();
+
+                resultCard.style.display = 'block';
+                resultCard.scrollIntoView({ behavior: 'smooth' });
+
+            } catch(err) {
+                alert('Error: ' + err.message);
+            } finally {
+                submitBtn.textContent = 'Assess Default Risk';
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
+
+</body>
+</html>
