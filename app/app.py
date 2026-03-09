@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, render_template
 from predictor import predict
 
-app = Flask("Credit Risk")
+app = Flask(__name__)
 
 @app.route('/')
 def home():
@@ -29,6 +29,3 @@ def predict_route():
 
     except Exception as e:
         return jsonify({'error': str(e)}), 400
-
-if __name__ == '__main__':
-    app.run(debug=True)

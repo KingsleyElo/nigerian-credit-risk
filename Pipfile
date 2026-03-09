@@ -14,10 +14,11 @@ pandas = "*"
 sqlalchemy = "*"
 python-dotenv = "*"
 flask = "*"
+gunicorn = "*"
 
 [dev-packages]
 ipykernel = "*"
 
 [requires]
 python_version = "3.14"
-python_full_version = "3.14.0"
+python_full_version = "3.14"

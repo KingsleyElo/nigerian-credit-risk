@@ -1,0 +1,9 @@
+services:
+  credit-risk-app:
+    build: .
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    volumes:
+      - ./models:/app/models
