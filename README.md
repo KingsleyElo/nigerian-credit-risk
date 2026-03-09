@@ -49,7 +49,7 @@ nigerian-credit-risk/
 ├── notebooks/                      # End-to-end pipeline notebooks
 ├── sql/                            # PostgreSQL feature engineering
 ├── models/                         # Saved champion model
-└── app/                            # Flask API (coming soon)
+└── app/                            # Flask prediction API + web interface
 ```
 
 ---
@@ -112,6 +112,7 @@ Features engineered in SQL to simulate a **Nigerian fintech feature store**:
 | Data Engineering | PostgreSQL, SQLAlchemy, Pandas |
 | Machine Learning | scikit-learn, XGBoost |
 | Environment | Pipenv, python-dotenv |
+| Deployment | Flask, Gunicorn, Docker |
 | Version Control | Git, GitHub |
 
 ---
@@ -128,6 +129,13 @@ pipenv install
 # Configure environment
 cp .env.example .env
 # Edit .env with your PostgreSQL credentials
+
+# PostgreSQL setup
+# 1. Install PostgreSQL: https://www.postgresql.org/download/
+# 2. Create a database and load the cleaned dataset
+# 3. Update .env with your host, port, database name, user and password
+# Notebook 03 connects to PostgreSQL to run feature engineering SQL
+# and save the output to data/features/loan_features.csv
 
 # Run notebooks in order
 # 01 → 02 → 03 → 04 → 05
