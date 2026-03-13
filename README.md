@@ -126,19 +126,17 @@ cd nigerian-credit-risk
 # Install dependencies
 pipenv install
 
-# Configure environment
-cp .env.example .env
-# Edit .env with your PostgreSQL credentials
-
-# PostgreSQL setup
-# 1. Install PostgreSQL: https://www.postgresql.org/download/
-# 2. Create a database and load the cleaned dataset
-# 3. Update .env with your host, port, database name, user and password
-# Notebook 03 connects to PostgreSQL to run feature engineering SQL
-# and save the output to data/features/loan_features.csv
-
 # Run notebooks in order
 # 01 → 02 → 03 → 04 → 05
+# Note: Notebook 03 requires PostgreSQL to re-run feature engineering.
+# The pre-generated output is already saved in data/features/loan_features.csv
+# so PostgreSQL is NOT required to reproduce the model results.
+
+# (Optional) PostgreSQL setup — only needed to re-run feature engineering
+# 1. Install PostgreSQL: https://www.postgresql.org/download/
+# 2. Create a database and load the cleaned dataset
+# 3. cp .env.example .env
+# 4. Update .env with your host, port, database name, user and password
 ```
 
 ---
