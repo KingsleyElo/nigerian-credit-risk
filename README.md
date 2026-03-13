@@ -156,8 +156,6 @@ docker-compose up
 
 ---
 
----
-
 ## Author
 
 **Kingsley Eloebhose** — Lagos, Nigeria
