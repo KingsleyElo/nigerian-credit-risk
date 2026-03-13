@@ -130,10 +130,9 @@ cd nigerian-credit-risk
 pipenv install
 
 # Run notebooks in order
-# 01 → 02 → 03 → 04 → 05
-# Note: Notebook 03 requires PostgreSQL to re-run feature engineering.
-# The pre-generated output is already saved in data/features/loan_features.csv
-# so PostgreSQL is NOT required to reproduce the model results.
+# 01 → 02 → 04 → 05
+# Note: Notebook 03 (feature engineering) can be skipped entirely —
+# the pre-generated output is already saved in data/features/loan_features.csv
 
 
 # ── Test the Prediction App ───────────────────────────────
@@ -142,7 +141,7 @@ pipenv install
 docker-compose up
 
 # Then open your browser at:
-# http://localhost:5001
+# http://localhost:5000
 
 
 # ── (Optional) Re-run Feature Engineering from Scratch ───
@@ -152,8 +151,10 @@ docker-compose up
 # 2. Create a database and load the cleaned dataset
 # 3. cp .env.example .env
 # 4. Update .env with your host, port, database name, user and password
-# 5. Re-run notebook 03
+# 5. Run notebook 03
 ```
+
+---
 
 ---
 
