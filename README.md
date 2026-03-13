@@ -119,6 +119,9 @@ Features engineered in SQL to simulate a **Nigerian fintech feature store**:
 
 ## Setup
 ```bash
+# ── Reproduce Model Results ───────────────────────────────
+# Requirements: Python + pipenv + Jupyter (no PostgreSQL, no Docker)
+
 # Clone the repo
 git clone https://github.com/KingsleyElo/nigerian-credit-risk.git
 cd nigerian-credit-risk
@@ -132,11 +135,24 @@ pipenv install
 # The pre-generated output is already saved in data/features/loan_features.csv
 # so PostgreSQL is NOT required to reproduce the model results.
 
-# (Optional) PostgreSQL setup — only needed to re-run feature engineering
+
+# ── Test the Prediction App ───────────────────────────────
+# Requirements: Docker
+
+docker-compose up
+
+# Then open your browser at:
+# http://localhost:5001
+
+
+# ── (Optional) Re-run Feature Engineering from Scratch ───
+# Requirements: PostgreSQL
+
 # 1. Install PostgreSQL: https://www.postgresql.org/download/
 # 2. Create a database and load the cleaned dataset
 # 3. cp .env.example .env
 # 4. Update .env with your host, port, database name, user and password
+# 5. Re-run notebook 03
 ```
 
 ---
